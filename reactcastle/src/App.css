@@ -1,5 +1,8 @@
 
-body {background-color:rgb(29, 22, 22);
+body{background-color: rgb(139, 139, 62);
+}
+div{
+  background-color: beige;
 }
   h1 {
     color: white;
@@ -14,8 +17,22 @@ body {background-color:rgb(29, 22, 22);
     font-family: verdana;
     font-size: 20px;
   
+
    
 }
+.useful-width{
+  max-width:1000px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.useful-width{
+  background-color:bisque;
+}
+.container {
+  background-color: gray;
+  opacity: 0.9;
+  
+  }
  
   
   label{
