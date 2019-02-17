@@ -1,6 +1,6 @@
 const Promise = require('promise');
 const castle = require('./scraperRelais.js');
-const michelin = require('./scraperMichelin.js');
+const michelin = require('./scraperMichelin');
 var fs = require('fs');
 
 
@@ -9,9 +9,9 @@ var fs = require('fs');
 console.log("debut");
 
 const hotelsJSON = castle.getHotelsJSON();
-const michelinJSON = michelin.getAll();
+const michelinJSON = michelin.getRestaurantsJSON();
 
-fs.writeFileSync("starredRelaisChateaux.json",JSON.stringify(findMutualChefsAndPCs(hotelsJSON, michelinJSON)));
+fs.writeFileSync("RelaisChateauxList.json",JSON.stringify(findMutualChefsAndPCs(hotelsJSON, michelinJSON)));
 
 function findMutualChefsAndPCs(hotelsList, michelinsList) {
     var starredHotels = [];

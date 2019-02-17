@@ -105,7 +105,7 @@ function saveHotelsInJson() {
         try {
             console.log("Trying to write the hotel's JSON file");
             var jsonHotels = JSON.stringify(hotelsList);
-            fs.writeFile("RelaisChateaux.json", jsonHotels, function doneWriting(err) {
+            fs.writeFile("Hotel.json", jsonHotels, function doneWriting(err) {
                 if (err) { console.log(err); }
             });
         }
@@ -133,5 +133,5 @@ module.exports.getHotelsJSON = function () {
     //     return JSON.parse(data);
     // });
     //Using Sync because we must be sure that the file has been read before exporting it
-    return JSON.parse(fs.readFileSync("RelaisChateaux.json"));
+    return JSON.parse(fs.readFileSync("Hotel.json"));
 }
