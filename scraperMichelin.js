@@ -111,7 +111,7 @@ function saveRestaurantsInJson() {
         try {
             console.log("Trying to write the restaurant's JSON file");
             var jsonRestaurants = JSON.stringify(restaurantsList);
-            fs.writeFile("starredRestaurants.json", jsonRestaurants, function doneWriting(err) {
+            fs.writeFile("restaurant.json", jsonRestaurants, function doneWriting(err) {
                 if (err) { console.error(err); }
             });
         }
