@@ -58,13 +58,13 @@ class App extends Component {
                     {this.state.hotel.map(hotel => {
                       return (
                         <section class="full-width">
-                          <div class="useful-width">
-                            <li key={hotel.id}>
-                              <h3>{hotel.hotelName}</h3>
+                          
+                            <li key={hotel.hotelName}>
+                              
                               <p>chef: {hotel.chef}</p>
                               <p> {hotel.url}</p>
                             </li>
-                          </div>
+                          
                         </section>
                       );
                     })}

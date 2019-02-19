@@ -1,273 +1,145 @@
-// Loads the information of all the Michelin starred restaurants
+let Promise = require('promise');
+let request = require('request');
+let cheerio = require('cheerio');
+let fs = require('fs');
 
-var Promise = require('promise');
-var request = require('request');
-var cheerio = require('cheerio');
-var fs = require('fs');
+//List of promises to create
+let finalList = [];
+let listPromises = [];
+let listRestaurant = [];
+let scrapingRound = 1;
 
-var promisesList = [];
-var indivPromisesList = [];
-var restaurantsList = [];
-var scrapingRound = 1;
-// var proxyUrl = 'https://lit-plateau-31117.herokuapp.com/';
-
-function createPromises() {
-    for (i = 1; i <= 37; i++) { //There are 35 pages but if they add some it's better to be prepared
+//Creating promises
+function init() {
+    for (let i = 1; i <= 37; i++) {
         let url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-' + i.toString();
-        promisesList.push(fillRestaurantsList(/*proxyUrl + */url));
+        finalList.push(getRestaurantsList(url));
         console.log("Page " + i + " of starred Michelin restaurants added to the list");
     }
 }
 
-function createIndividualPromises() {
-    return new Promise(function (resolve, reject) {
+function createPromises() {
+    return new Promise(function(resolve) {
         if (scrapingRound === 1) {
-            for (i = 0; i < restaurantsList.length / 2; i++) {
-                let restaurantURL = restaurantsList[i].url;
-                indivPromisesList.push(fillRestaurantInfo(/*proxyUrl + */restaurantURL, i));
-                console.log("Added url of " + i + "th restaurant to the promises list");
+            for (let i = 0; i < listRestaurant.length / 2; i++) {
+                let restaurantURL = listRestaurant[i].url;
+                listPromises.push(getPostal_Price(restaurantURL, i));
+                console.log( i + "th restaurant added to list");
             }
             resolve();
             scrapingRound++;
         }
         if (scrapingRound === 2) {
-            for (i = restaurantsList.length / 2; i < restaurantsList.length; i++) {
-                let restaurantURL = restaurantsList[i].url;
-                indivPromisesList.push(fillRestaurantInfo(/*proxyUrl + */restaurantURL, i));
-                console.log("Added url of " + i + "th restaurant to the promises list");
+            for (let i = listRestaurant.length / 2; i < listRestaurant.length; i++) {
+                let restaurantURL = listRestaurant[i].url;
+                listPromises.push(getPostal_Price(restaurantURL, i));
+                console.log( i + "th restaurant added to list");
             }
             resolve();
         }
     })
 }
 
-function fillRestaurantsList(url) { //Fills restaurantsList with a Restaurant object with their URL for now
-    return new Promise(function (resolve, reject) {
-        request(url, function (err, res, html) {
+//Fetching list of all restaurants
+function getRestaurantsList(url) {
+    return new Promise(function(resolve, reject) {
+        request(url, function(err, res, html) {
             if (err) {
-                console.error(err)
+                console.error(err);
                 return reject(err);
-            }
-            else if (res.statusCode !== 200) { //200 means request succesfull
+            } else if (res.statusCode !== 200) {
                 err = new Error("Unexpected status code : " + res.statusCode);
                 err.res = res;
-                console.error(err)
+                console.error(err);
                 return reject(err);
             }
-            var $ = cheerio.load(html);
-            $('.poi-card-link').each(function () {
+            let $ = cheerio.load(html);
+            $('.poi-card-link').each(function() {
                 let data = $(this);
                 let link = data.attr("href");
                 let url = "https://restaurant.michelin.fr/" + link;
-                restaurantsList.push({ "name": "", "postalCode": "", "chef": "", "url": url })
-            })
-            resolve(restaurantsList);
+                listRestaurant.push({
+                    "url": url,
+                    "name": "",
+                    "postalCode": "",
+                    "chef": ""
+                })
+            });
+            resolve(listRestaurant);
         });
     });
 }
 
-
-function fillRestaurantInfo(url, index) { //Going to the restaurant's adress to get the name, chef, and postal code 
-    return new Promise(function (resolve, reject) {
-        request(url, function (err, res, html) {
+//Postal code and price
+function getPostal_Price(url, index) {
+    return new Promise(function(resolve, reject) {
+        request(url, function(err, res, html) {
             if (err) {
                 console.error(err);
                 return reject(err);
-            }
-            else if (res.statusCode !== 200) {
+            } else if (res.statusCode !== 200) {
                 err = new Error("Unexpected status code : " + res.statusCode);
                 err.res = res;
-                console.error(err)
+                console.error(err);
                 return reject(err);
             }
 
             const $ = cheerio.load(html);
-            $('.poi_intro-display-title').first().each(function () { //For the name
+            $('.poi_intro-display-title').first().each(function() {
                 let data = $(this);
                 let name = data.text();
-                name = name.replace(/\n/g, ""); //We need to take out all the newlines because this would cause some problems for the json
-                restaurantsList[index].name = name.trim();
-            })
+                name = name.replace(/\n/g, "");
+                listRestaurant[index].name = name.trim();
+            });
 
-            $('.postal-code').first().each(function () {
+            $('.postal-code').first().each(function() {
                 let data = $(this);
                 let pc = data.text();
-                restaurantsList[index].postalCode = pc;
-            })
+                listRestaurant[index].postalCode = pc;
+            });
 
-            $('#node_poi-menu-wrapper > div.node_poi-chef > div.node_poi_description > div.field.field--name-field-chef.field--type-text.field--label-above > div.field__items > div').first().each(function () {
+            $('#node_poi-menu-wrapper > div.node_poi-chef > div.node_poi_description > div.field.field--name-field-chef.field--type-text.field--label-above > div.field__items > div').first().each(function() {
                 let data = $(this);
                 let chefname = data.text();
-                restaurantsList[index].chef = chefname;
-            })
-            console.log("Added info of " + index + "th restaurant")
-            resolve(restaurantsList);
+                listRestaurant[index].chef = chefname;
+            });
+            console.log("Postal code and price of  " + index + "th restaurant added");
+            resolve(listRestaurant);
         });
     });
 }
 
-function saveRestaurantsInJson() {
-    return new Promise(function (resolve, reject) {
+//Saving the list in Json file
+function save() {
+    return new Promise(function(resolve) {
         try {
-            console.log("Trying to write the restaurant's JSON file");
-            var jsonRestaurants = JSON.stringify(restaurantsList);
-            fs.writeFile("restaurant.json", jsonRestaurants, function doneWriting(err) {
-                if (err) { console.error(err); }
+            console.log("Creating list of restaurants in listRestaurants.json");
+            let jsonRestaurants = JSON.stringify(listRestaurant);
+            fs.writeFile("listRestaurants.json", jsonRestaurants, function doneWriting(err) {
+                if (err) {
+                    console.error(err);
+                }
             });
-        }
-        catch (error) {
+            console.log("saving successful");
+        } catch (error) {
             console.error(error);
         }
         resolve();
     });
 }
 
-
-createPromises();
-Promise.all(promisesList)
-    .then(createIndividualPromises)
-    .then(() => { return Promise.all(indivPromisesList); })
-    .then(createIndividualPromises)
-    .then(() => { return Promise.all(indivPromisesList); })
-    .then(saveRestaurantsInJson)
-    .then(() => { console.log("Successfuly saved restaurants JSON file") });
-
-module.exports.getRestaurantsJSON = function () {
-    return JSON.parse(fs.readFileSync("starredRestaurants.json"));
-}// Loads the information of all the Michelin starred restaurants
-
-var Promise = require('promise');
-var request = require('request');
-var cheerio = require('cheerio');
-var fs = require('fs');
-
-var promisesList = [];
-var indivPromisesList = [];
-var restaurantsList = [];
-var scrapingRound = 1;
-// var proxyUrl = 'https://lit-plateau-31117.herokuapp.com/';
-
-function createPromises() {
-    for (i = 1; i <= 37; i++) { //There are 35 pages but if they add some it's better to be prepared
-        let url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-' + i.toString();
-        promisesList.push(fillRestaurantsList(/*proxyUrl + */url));
-        console.log("Page " + i + " of starred Michelin restaurants added to the list");
-    }
-}
-
-function createIndividualPromises() {
-    return new Promise(function (resolve, reject) {
-        if (scrapingRound === 1) {
-            for (i = 0; i < restaurantsList.length / 2; i++) {
-                let restaurantURL = restaurantsList[i].url;
-                indivPromisesList.push(fillRestaurantInfo(/*proxyUrl + */restaurantURL, i));
-                console.log("Added url of " + i + "th restaurant to the promises list");
-            }
-            resolve();
-            scrapingRound++;
-        }
-        if (scrapingRound === 2) {
-            for (i = restaurantsList.length / 2; i < restaurantsList.length; i++) {
-                let restaurantURL = restaurantsList[i].url;
-                indivPromisesList.push(fillRestaurantInfo(/*proxyUrl + */restaurantURL, i));
-                console.log("Added url of " + i + "th restaurant to the promises list");
-            }
-            resolve();
-        }
+//Main()
+init();
+Promise.all(finalList)
+    .then(createPromises)
+    .then(() => {
+        return Promise.all(listPromises);
     })
-}
-
-function fillRestaurantsList(url) { //Fills restaurantsList with a Restaurant object with their URL for now
-    return new Promise(function (resolve, reject) {
-        request(url, function (err, res, html) {
-            if (err) {
-                console.error(err)
-                return reject(err);
-            }
-            else if (res.statusCode !== 200) { //200 means request succesfull
-                err = new Error("Unexpected status code : " + res.statusCode);
-                err.res = res;
-                console.error(err)
-                return reject(err);
-            }
-            var $ = cheerio.load(html);
-            $('.poi-card-link').each(function () {
-                let data = $(this);
-                let link = data.attr("href");
-                let url = "https://restaurant.michelin.fr/" + link;
-                restaurantsList.push({ "name": "", "postalCode": "", "chef": "", "url": url })
-            })
-            resolve(restaurantsList);
-        });
+    .then(save)
+    .then(() => {
+        console.log("done");
     });
-}
 
-
-function fillRestaurantInfo(url, index) { //Going to the restaurant's adress to get the name, chef, and postal code 
-    return new Promise(function (resolve, reject) {
-        request(url, function (err, res, html) {
-            if (err) {
-                console.error(err);
-                return reject(err);
-            }
-            else if (res.statusCode !== 200) {
-                err = new Error("Unexpected status code : " + res.statusCode);
-                err.res = res;
-                console.error(err)
-                return reject(err);
-            }
-
-            const $ = cheerio.load(html);
-            $('.poi_intro-display-title').first().each(function () { //For the name
-                let data = $(this);
-                let name = data.text();
-                name = name.replace(/\n/g, ""); //We need to take out all the newlines because this would cause some problems for the json
-                restaurantsList[index].name = name.trim();
-            })
-
-            $('.postal-code').first().each(function () {
-                let data = $(this);
-                let pc = data.text();
-                restaurantsList[index].postalCode = pc;
-            })
-
-            $('#node_poi-menu-wrapper > div.node_poi-chef > div.node_poi_description > div.field.field--name-field-chef.field--type-text.field--label-above > div.field__items > div').first().each(function () {
-                let data = $(this);
-                let chefname = data.text();
-                restaurantsList[index].chef = chefname;
-            })
-            console.log("Added info of " + index + "th restaurant")
-            resolve(restaurantsList);
-        });
-    });
-}
-
-function saveRestaurantsInJson() {
-    return new Promise(function (resolve, reject) {
-        try {
-            console.log("Trying to write the restaurant's JSON file");
-            var jsonRestaurants = JSON.stringify(restaurantsList);
-            fs.writeFile("Restaurant.json", jsonRestaurants, function doneWriting(err) {
-                if (err) { console.error(err); }
-            });
-        }
-        catch (error) {
-            console.error(error);
-        }
-        resolve();
-    });
-}
-
-
-createPromises();
-Promise.all(promisesList)
-    .then(createIndividualPromises)
-    .then(() => { return Promise.all(indivPromisesList); })
-    .then(createIndividualPromises)
-    .then(() => { return Promise.all(indivPromisesList); })
-    .then(saveRestaurantsInJson)
-    .then(() => { console.log("Successfuly saved restaurants JSON file") });
-
-module.exports.getRestaurantsJSON = function () {
-    return JSON.parse(fs.readFileSync("Restaurant.json"));
-}
+module.exports.getRestaurantsJSON = function() {
+    return JSON.parse(fs.readFileSync("listRestaurants.json"));
+};
