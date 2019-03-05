@@ -45,14 +45,14 @@ class App extends Component {
         </head>
         <body>
           <div class="container">
-            <section class="full-width">
+            
               <img
                 src="https://upload.wikimedia.org/wikipedia/fr/thumb/b/be/Logo_Relais_et_Chateaux.png/280px-Logo_Relais_et_Chateaux.png"
                 class="imgPriv"
                 alt="castle"
               />
               <h1>Liste des Hotels Restaurants étoilés</h1>
-            </section>
+            
           </div>
           <center>
             <div>
@@ -60,7 +60,7 @@ class App extends Component {
                 <div className="wrapper">
                   <ul>
                     {this.state.hotel.map(hotel => {
-                      console.log(hotel);
+                      //console.log(hotel);
                       return (
                         <section class="full-width">
                           <table
