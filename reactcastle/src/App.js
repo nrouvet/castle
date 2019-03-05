@@ -44,30 +44,53 @@ class App extends Component {
           <title>Casle</title>
         </head>
         <body>
-          <img
-            src="https://upload.wikimedia.org/wikipedia/fr/thumb/b/be/Logo_Relais_et_Chateaux.png/280px-Logo_Relais_et_Chateaux.png"
-            class="imgPriv"
-            alt="castle" 
-          />
-          <h1>Liste des Hotels Restaurants étoilés</h1>
+          <div class="container">
+            <section class="full-width">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/fr/thumb/b/be/Logo_Relais_et_Chateaux.png/280px-Logo_Relais_et_Chateaux.png"
+                class="imgPriv"
+                alt="castle"
+              />
+              <h1>Liste des Hotels Restaurants étoilés</h1>
+            </section>
+          </div>
           <center>
             <div>
               <p>
                 <div className="wrapper">
                   <ul>
                     {this.state.hotel.map(hotel => {
-                      console.log(hotel)
+                      console.log(hotel);
                       return (
                         <section class="full-width">
-                          
-                            <li key={hotel.hotelName}>
+                          <table
+                            id="selectedColumn"
+                            class="table table-striped table-bordered table-sm"
+                            cellspacing="0"
+                            width="100%"
+                          >
+                            <thead>
+                              <tr>
+                                <th class="th-sm">Name</th>
+                                <th class="th-sm">Chief</th>
+                                <th class="th-sm">Restaurant</th>
+                                <th class="th-sm">Price</th>
+                                <th class="th-sm">Url</th>
                               
-                              <p>chef: {hotel.chef}</p>
-                              <p>price: {hotel.price}</p>
-                              <p>restaurant: {hotel.restaurantName}</p>
-                              <p> {hotel.url}</p>
-                            </li>
-                          
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{hotel.hotelName}</td>
+                                <td>{hotel.chef}</td>
+                                <td>{hotel.restaurantName}</td>
+                                <td>{hotel.price}</td>
+                                <td>{hotel.url}</td>
+                              </tr>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                          </table>
                         </section>
                       );
                     })}
