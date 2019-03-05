@@ -11,7 +11,7 @@ class App extends Component {
     firebase.initializeApp(config);
   }
   componentWillMount() {
-    const hotelRef = firebase.database().ref("hotel");
+    const hotelRef = firebase.database().ref("Hotel");
 
     hotelRef.on("value", snapchot => {
       this.setState({
@@ -56,15 +56,12 @@ class App extends Component {
                 <div className="wrapper">
                   <ul>
                     {this.state.hotel.map(hotel => {
-                      console.log(hotel)
                       return (
                         <section class="full-width">
                           
                             <li key={hotel.hotelName}>
                               
                               <p>chef: {hotel.chef}</p>
-                              <p>price: {hotel.price}</p>
-                              <p>restaurant: {hotel.restaurantName}</p>
                               <p> {hotel.url}</p>
                             </li>
                           
